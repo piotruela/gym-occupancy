@@ -24,7 +24,7 @@
 
     <script>
         async function fetchData() {
-            const response = await fetch('https://raw.githubusercontent.com/your-username/your-repo/main/data.csv');
+            const response = await fetch('https://raw.githubusercontent.com/piotruela/gym-occupancy/main/data.csv');
             const data = await response.text();
             const rows = data.split('\n').slice(1);
 
