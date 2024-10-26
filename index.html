@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weekly Average Data Graph</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>Average Value by Day and Hour of the Week</h1>
+    <div id="graph"></div>
+    <script>
+        async function fetchData() {
+            const response = await fetch('https://raw.githubusercontent.com/your-username/your-repo/main/data.csv');
+            const data = await response.text();
+            const rows = data.split('\n').slice(1);
+
+            // Arrays to hold timestamps and values
+            const timestamps = [];
+            const values = [];
+
+            rows.forEach(row => {
+                const [timestamp, value] = row.split(',');
+                if (timestamp && value) {
+                    timestamps.push(new Date(timestamp));
+                    values.push(parseFloat(value));
+                }
+            });
+
+            // Prepare data structure for weekly averages
+            const weeklyData = {};
+
+            timestamps.forEach((timestamp, index) => {
+                const dayOfWeek = timestamp.getDay(); // 0=Sunday, 6=Saturday
+                const hourOfDay = timestamp.getHours();
+                const key = `${dayOfWeek}-${hourOfDay}`;
+
+                if (!weeklyData[key]) {
+                    weeklyData[key] = { sum: 0, count: 0 };
+                }
+                weeklyData[key].sum += values[index];
+                weeklyData[key].count += 1;
+            });
+
+            // Convert weeklyData to arrays for plotting
+            const days = [];
+            const hours = [];
+            const averages = [];
+
+            Object.keys(weeklyData).forEach(key => {
+                const [dayOfWeek, hourOfDay] = key.split('-').map(Number);
+                days.push(dayOfWeek);
+                hours.push(hourOfDay);
+                averages.push(weeklyData[key].sum / weeklyData[key].count); // Calculate average
+            });
+
+            // Plot the data using Plotly
+            const trace = {
+                x: days.map((d, i) => `${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d]} ${hours[i]}:00`), // Format labels
+                y: averages,
+                mode: 'lines+markers',
+                type: 'scatter'
+            };
+
+            Plotly.newPlot('graph', [trace], {
+                title: "Average Value by Day and Hour of the Week",
+                xaxis: { title: "Day and Hour of the Week" },
+                yaxis: { title: "Average Value" }
+            });
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
