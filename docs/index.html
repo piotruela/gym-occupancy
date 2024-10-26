@@ -6,7 +6,7 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <h1>Check Value by Half-Hour on Selected Day</h1>
+    <h1>People at the gym graph</h1>
     
     <!-- Dropdown for Day Selection -->
     <label for="daySelect">Select a Day:</label>
@@ -67,9 +67,8 @@
             };
 
             Plotly.newPlot('graph', [trace], {
-                title: "Average number of people at the gym",
                 xaxis: { title: "Time (HH:MM)" },
-                yaxis: { title: "Average Number of People" }
+                yaxis: { title: "Average Number of People", rangemode: "tozero"}
             });
         }
 
