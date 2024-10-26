@@ -2,22 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Weekly Average Data Graph</title>
+    <title>Value by Half-Hour on Selected Day</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <h1>Average Value by Day and Hour of the Week</h1>
+    <h1>Check Value by Half-Hour on Selected Day</h1>
+    
+    <!-- Dropdown for Day Selection -->
+    <label for="daySelect">Select a Day:</label>
+    <select id="daySelect">
+        <option value="0">Sunday</option>
+        <option value="1">Monday</option>
+        <option value="2">Tuesday</option>
+        <option value="3">Wednesday</option>
+        <option value="4">Thursday</option>
+        <option value="5">Friday</option>
+        <option value="6">Saturday</option>
+    </select>
+    
     <div id="graph"></div>
+
     <script>
         async function fetchData() {
             const response = await fetch('https://raw.githubusercontent.com/your-username/your-repo/main/data.csv');
             const data = await response.text();
             const rows = data.split('\n').slice(1);
 
-            // Arrays to hold timestamps and values
             const timestamps = [];
             const values = [];
 
+            // Parse data and extract timestamps and values
             rows.forEach(row => {
                 const [timestamp, value] = row.split(',');
                 if (timestamp && value) {
@@ -26,49 +40,51 @@
                 }
             });
 
-            // Prepare data structure for weekly averages
-            const weeklyData = {};
+            return { timestamps, values };
+        }
+
+        function filterDataByDay(timestamps, values, selectedDay) {
+            const filteredTimes = [];
+            const filteredValues = [];
 
             timestamps.forEach((timestamp, index) => {
-                const dayOfWeek = timestamp.getDay(); // 0=Sunday, 6=Saturday
-                const hourOfDay = timestamp.getHours();
-                const key = `${dayOfWeek}-${hourOfDay}`;
-
-                if (!weeklyData[key]) {
-                    weeklyData[key] = { sum: 0, count: 0 };
+                if (timestamp.getDay() === selectedDay) {
+                    const timeLabel = `${String(timestamp.getHours()).padStart(2, '0')}:${String(timestamp.getMinutes()).padStart(2, '0')}`;
+                    filteredTimes.push(timeLabel);
+                    filteredValues.push(values[index]);
                 }
-                weeklyData[key].sum += values[index];
-                weeklyData[key].count += 1;
             });
 
-            // Convert weeklyData to arrays for plotting
-            const days = [];
-            const hours = [];
-            const averages = [];
+            return { filteredTimes, filteredValues };
+        }
 
-            Object.keys(weeklyData).forEach(key => {
-                const [dayOfWeek, hourOfDay] = key.split('-').map(Number);
-                days.push(dayOfWeek);
-                hours.push(hourOfDay);
-                averages.push(weeklyData[key].sum / weeklyData[key].count); // Calculate average
-            });
-
-            // Plot the data using Plotly
+        function plotData(times, values) {
             const trace = {
-                x: days.map((d, i) => `${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d]} ${hours[i]}:00`), // Format labels
-                y: averages,
+                x: times,
+                y: values,
                 mode: 'lines+markers',
                 type: 'scatter'
             };
 
             Plotly.newPlot('graph', [trace], {
-                title: "Average Value by Day and Hour of the Week",
-                xaxis: { title: "Day and Hour of the Week" },
-                yaxis: { title: "Average Value" }
+                title: "Average number of people at the gym",
+                xaxis: { title: "Time (HH:MM)" },
+                yaxis: { title: "Average Number of People" }
             });
         }
 
-        fetchData();
+        async function updateGraph() {
+            const { timestamps, values } = await fetchData();
+            const selectedDay = parseInt(document.getElementById('daySelect').value, 10);
+            const { filteredTimes, filteredValues } = filterDataByDay(timestamps, values, selectedDay);
+
+            plotData(filteredTimes, filteredValues);
+        }
+
+        document.getElementById('daySelect').addEventListener('change', updateGraph);
+
+        // Initial plot with the first day of the week selected
+        updateGraph();
     </script>
 </body>
 </html>
