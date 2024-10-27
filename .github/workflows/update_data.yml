@@ -13,6 +13,11 @@ jobs:
     - name: Check out repo
       uses: actions/checkout@v2
 
+    - name: Set timezone
+      uses: szenius/set-timezone@v2.0
+      with:
+        timezoneLinux: 'Europe/Berlin'
+
     - name: Set current date as env variable
       run: echo "NOW=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_ENV
     - name: Echo current date
