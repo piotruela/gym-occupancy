@@ -62,12 +62,12 @@
             const trace = {
                 x: times,
                 y: values,
-                mode: 'lines+markers',
+                mode: 'markers',
                 type: 'scatter'
             };
 
             Plotly.newPlot('graph', [trace], {
-                xaxis: { title: "Time (HH:MM)" },
+                xaxis: { title: "Time (HH:MM)", rangemode: "tozero"},
                 yaxis: { title: "Average Number of People", rangemode: "tozero"}
             });
         }
